@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>整形済み運行時刻情報</title>
+</head>
+<body>
+
+  <h2>整形済み運行時刻情報</h2>
+
+  <textarea id="textInput" rows="10" cols="100" placeholder="Yahoo路線情報の結果を貼り付け"></textarea>
+  <br>
+  <button onclick="showFormattedLines()">整形</button>
+
+  <br><br>
+  <textarea id="medOutputArea" rows="10" cols="100" readonly></textarea>
+
+  <br><br>
+  <textarea id="medOutputArea2" rows="10" cols="100" readonly></textarea>
+
+  <br><br>
+  <textarea id="outputArea" rows="10" cols="100" readonly></textarea>
+  <br>
+  <button onclick="copyToClipboard('outputArea')">コピー</button>
+
+
+  <script>
+    const regex1 = /^\d{2}:\d{2}$/;
+    const regex2 = /^(\d{2}):(\d{2})着(\d{2}):(\d{2})発/;
+    const regex3 = /^(\d{2}):(\d{2})発/;
+    const regex4 = /^(\d{2}):(\d{2})着\t/;
+
+    function showFormattedLines() {
+      const targetLines = getTargetLines();
+      document.getElementById("medOutputArea").value = targetLines;
+      const formattedLines = getFormattedLines(targetLines);
+      document.getElementById("medOutputArea2").value = formattedLines;
+      const formattedLines2 = getFormattedLines2(formattedLines);
+      document.getElementById("outputArea").value = formattedLines2;
+      copyToClipboard("outputArea");
+    }
+
+
+    // function getTargetLines() {
+    //   const input = document.getElementById("textInput").value;
+    //   const lines = input.split("\n");
+
+    //   let formatted = "";
+
+    //   for (let i = 0; i < lines.length; i++) {
+    //     const line = lines[i].trim();
+    //     if (regex1.test(line)) {
+    //       i++
+    //       const nextLine = lines[i].trim();
+
+    //       const timeStr = line.replace(":", "");
+    //       const station = getStation(nextLine)
+
+    //       formatted += timeStr + station + "\n";
+
+    //       // 最終目的地の場合は路線名がないのでif分岐する
+    //       // if (i !== lines.length - 1) {
+    //       if (i !== lines.length - 1 && lines[i + 1].trim() !== "") {
+    //         i++
+    //         const secondNextLine = lines[i].trim();
+    //         // const secondNextLine = lines[i];
+
+    //         formatted += secondNextLine + "\n";
+    //       }
+
+    //     }else if (regex2.test(line)) {
+    //       const timeStr = getTimeFull(line)
+    //       const station = getStation(line)
+
+    //       formatted += timeStr + station + "\n";
+    //       // formatted += timeStr1 + timeStr2 + "\n";
+
+    //       i++
+    //       const nextLine = lines[i].trim();
+    //       formatted += nextLine + "\n";
+    //     }
+
+    //   }
+
+    //   return formatted.trim();
+    // }
+
+    function getTargetLines() {
+      const input = document.getElementById("textInput").value;
+      const lines = input.split("\n");
+
+      let targetLines = "";
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+
+        if (regex1.test(line)) {
+          targetLines += line;
+
+          i++;
+          const secondNextLine = lines[i].trim();
+          targetLines += secondNextLine + "\n";
+
+          // 最終目的地の場合は路線名がないのでif分岐する
+          i++;
+          if (i !== lines.length && lines[i] !== "") {
+            const thirdNextLine = lines[i];
+            targetLines += thirdNextLine + "\n";
+          } else {
+            targetLines += "\n";
+          }
+
+        } else if (regex2.test(line)) {
+          targetLines += line + "\n";
+
+          i++;
+          const nextLine = lines[i].trim();
+          targetLines += nextLine + "\n";
+        }
+      }
+
+      return targetLines.trim();
+    }
+
+
+
+    function getFormattedLines(input) {
+      const lines = input.split("\n");
+      let formattedLines = "";
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (regex2.test(line)) {
+          formattedLines += getTime(line) + getStation(line) + "\n";
+        }else if (regex3.test(line)) {
+          formattedLines += getTimeSingle(line) + getStation(line) + "\n";
+        }else if (regex4.test(line)) {
+          formattedLines += getTimeSingle(line) + getStation(line) + "\n";
+        }else{
+          // if(line == '徒歩'){
+          if (line.includes('徒歩')) {
+            formattedLines += '徒歩' + "\n";
+          }
+        }
+      }
+
+      return formattedLines.trim();
+    }
+
+    function getFormattedLines2(input) {
+      const lines = input.split("\n");
+      let formattedLines = "";
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+
+        if (i == lines.length - 1) {
+            formattedLines += line + "\n";
+            break;
+        }
+
+        const secondNextLine = lines[i+1].trim();
+
+        if(secondNextLine == '徒歩'){
+          i += 2;
+          const thirdNextLine = lines[i].trim();
+          formattedLines += getLineMarge(line,thirdNextLine) + "\n";
+        }else{
+            formattedLines += line + "\n";
+        }
+      }
+
+      return formattedLines.trim();
+    }    
+
+
+
+    // function copyToClipboard() {
+    //   const output = document.getElementById("outputArea");
+    //   output.select();
+    //   output.setSelectionRange(0, 99999); // iOS対応
+    //   document.execCommand("copy");
+    //   alert("コピーしました！");
+    // }
+
+    function copyToClipboard(id) {
+      const target = document.getElementById(id);
+      if (!target) {
+        alert(`要素が見つかりません: ${id}`);
+        return;
+      }
+
+      target.select();
+      target.setSelectionRange(0, 99999); // iOS対応
+      document.execCommand("copy");
+      alert("コピーしました！");
+    }    
+
+    function getTimeFull(line) {
+      const matchAry = line.match(regex2)
+      const h1Str = matchAry[1]; // "09" を保持
+      const m1Str = matchAry[2]; // "05"
+      const h2Str = matchAry[3]; // "09"
+      const m2Str = matchAry[4]; // "06"
+
+      const timeStr1 = `${h1Str}${m1Str}`;
+      const timeStr2 = `${h2Str}${m2Str}`;
+
+      const timeStr = timeStr1 + timeStr2;
+
+      return timeStr;
+    }
+
+
+    // function getTime(line) {
+    //   const matchAry = line.match(regex2)
+    //   const h1Str = matchAry[1]; // "09" を保持
+    //   const m1Str = matchAry[2]; // "05"
+    //   const h2Str = matchAry[3]; // "09"
+    //   const m2Str = matchAry[4]; // "06"
+
+    //   const h1 = parseInt(matchAry[1], 10); // 18
+    //   const m1 = parseInt(matchAry[2], 10); // 44
+    //   const h2 = parseInt(matchAry[3], 10); // 18
+    //   const m2 = parseInt(matchAry[4], 10); // 46
+
+    //   const timeStr1 = `${h1Str}${m1Str}`;
+    //   let timeStr2 = ""
+    //   if (h1 + 1 < h2) {
+    //     timeStr2 = `${h2Str}${m2Str}`;
+    //   }else if (h1 + 1 == h2 && m1 <= m2) {
+    //     timeStr2 = `${h2Str}${m2Str}`;
+    //   }else {
+    //     timeStr2 = `${m2Str}`;
+    //   }
+    //   const timeStr = `${timeStr1}${timeStr2}`;
+    //   return timeStr;
+    // }
+
+    function getTime(line) {
+      const matchAry = line.match(regex2);
+      const h1Str = matchAry[1];
+      const m1Str = matchAry[2];
+      const h2Str = matchAry[3];
+      const m2Str = matchAry[4];
+
+      return getTimeDetail(h1Str, m1Str, h2Str, m2Str);
+    }
+
+    function getTimeDetail(h1Str, m1Str, h2Str, m2Str) {
+      const h1 = parseInt(h1Str, 10);
+      const m1 = parseInt(m1Str, 10);
+      const h2 = parseInt(h2Str, 10);
+      const m2 = parseInt(m2Str, 10);
+
+      const timeStr1 = `${h1Str}${m1Str}`;
+      let timeStr2 = "";
+
+      if (h1 + 1 < h2) {
+        timeStr2 = `${h2Str}${m2Str}`;
+      } else if (h1 + 1 === h2 && m1 <= m2) {
+        timeStr2 = `${h2Str}${m2Str}`;
+      } else {
+        timeStr2 = `${m2Str}`;
+      }
+
+      return timeStr1 + timeStr2;
+    }
+
+    function getTimeSingle(line) {
+      const hStr = line.substring(0, 2);  // "12"
+      const mStr = line.substring(3, 5); // "21"
+      const timeStr = `${hStr}${mStr}`;
+      return timeStr;
+    }
+
+    function getLineMarge(line1,line2) {
+      const [h1Str1, m1Str1, h2Str1, m2Str1, station1] = getFullArrivalDepartureTimeStation(line1);
+      const [h1Str2, m1Str2, h2Str2, m2Str2, station2] = getFullArrivalDepartureTimeStation(line2);     
+      
+      if(h2Str2==""){
+        return h1Str1 + m1Str1 + station1
+      }
+
+      lineMargeTime = getTimeDetail(h1Str1, m1Str1, h2Str2, m2Str2);
+      lineMargeStation = station1 + "/" + station2;
+
+      return lineMargeTime + lineMargeStation
+    }
+
+    // function getFullArrivalDepartureTime(line) {
+    //   const h1Str = line.slice(0, 2);
+    //   const m1Str = line.slice(2, 4);
+
+    //   if(isNaN(parseInt(line.slice(4, 6)))) {
+    //     return [h1Str,m1Str,"",""];
+    //   }
+
+    //   let h2Str, m2Str;
+    //   if(isNaN(parseInt(line.slice(6, 8)))) {
+    //     h2Str = h1Str;
+    //     m2Str = line.slice(4, 6);
+    //   } else {
+    //     h2Str = line.slice(4, 6);
+    //     m2Str = line.slice(6, 8);
+    //   }
+    //   return [h1Str,m1Str,h2Str,m2Str];
+    // }    
+
+    function getFullArrivalDepartureTimeStation(line) {
+      const h1Str = line.slice(0, 2);
+      const m1Str = line.slice(2, 4);
+
+      let h2Str = "";
+      let m2Str = "";
+      let station = "";
+
+      const part4_6 = line.slice(4, 6);
+      const part6_8 = line.slice(6, 8);
+
+      if (!isNaN(parseInt(part6_8))) {
+        h2Str = part4_6;
+        m2Str = part6_8;
+        station = line.slice(8);
+      } else if (!isNaN(parseInt(part4_6))) {
+        h2Str = h1Str;
+        m2Str = part4_6; 
+        station = line.slice(6);
+      } else {
+        h2Str = "";
+        m2Str = "";
+        station = line.slice(4);
+      }
+
+      return [h1Str, m1Str, h2Str, m2Str, station];
+    }
+
+    function getStation(line) {
+      const PosStart = line.indexOf('\t');
+      // let PosEnd1 = line.indexOf('地図');
+      // let PosEnd2 = line.indexOf('出口');
+      // let PosEnd3 = line.indexOf('時刻表');
+      // let PosEnd4 = line.indexOf('(');
+      // let PosEnd5 = line.indexOf('/');
+      // PosEnd1 = (PosEnd1 < PosStart) ? line.length : PosEnd1;
+      // PosEnd2 = (PosEnd2 < PosStart) ? line.length : PosEnd2;
+      // PosEnd3 = (PosEnd3 < PosStart) ? line.length : PosEnd3;
+      // PosEnd4 = (PosEnd4 < PosStart) ? line.length : PosEnd4;
+      // PosEnd5 = (PosEnd5 < PosStart) ? line.length : PosEnd5;
+
+      // const PosEnd = Math.min(PosEnd1,PosEnd2,PosEnd3,PosEnd4,PosEnd5);
+
+      // const station = line.slice(PosStart, PosEnd).trim();
+
+      const keywords = ['地図', '出口', '時刻表', '(', '/'];
+
+      let PosEnds = keywords.map(keyword => {
+          const pos = line.indexOf(keyword);
+          return (pos < PosStart) ? line.length : pos;
+      });
+
+      const PosEnd = Math.min(...PosEnds);
+
+      const station = line.slice(PosStart, PosEnd).trim();
+
+      return station;
+    }
+
+</script>
+
+</body>
+</html>
