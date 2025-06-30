@@ -13,7 +13,9 @@
   <button onclick="showFormattedLines()">整形</button>
 
   <br><br>
-  <textarea id="medOutputArea" rows="10" cols="100" readonly></textarea>
+  <textarea id="medOutputArea" rows="10" cols="100"></textarea>
+  <br>
+  <button onclick="showFormattedLines2()">整形2</button>
 
   <br><br>
   <textarea id="medOutputArea2" rows="10" cols="100" readonly></textarea>
@@ -29,11 +31,20 @@
     const regex2 = /^(\d{2}):(\d{2})着(\d{2}):(\d{2})発/;
     const regex3 = /^(\d{2}):(\d{2})発/;
     const regex4 = /^(\d{2}):(\d{2})着\t/;
+    const regex5 = /^\d{2}:\d{2}(?=\S).*$/; 　// 04:30東京
 
     function showFormattedLines() {
       const targetLines = getTargetLines();
       document.getElementById("medOutputArea").value = targetLines;
       const formattedLines = getFormattedLines(targetLines);
+      document.getElementById("medOutputArea2").value = formattedLines;
+      const formattedLines2 = getFormattedLines2(formattedLines);
+      document.getElementById("outputArea").value = formattedLines2;
+      copyToClipboard("outputArea");
+    }
+
+    function showFormattedLines2() {
+      const formattedLines = getFormattedLines(document.getElementById("medOutputArea").value);
       document.getElementById("medOutputArea2").value = formattedLines;
       const formattedLines2 = getFormattedLines2(formattedLines);
       document.getElementById("outputArea").value = formattedLines2;
@@ -116,9 +127,13 @@
           i++;
           const nextLine = lines[i].trim();
           targetLines += nextLine + "\n";
+
+        } else if (regex5.test(line)) {
+          if(line.slice(5, 7) !== '発→'){
+            targetLines += line + "\n";
+          }
         }
       }
-
       return targetLines.trim();
     }
 
@@ -136,6 +151,10 @@
           formattedLines += getTimeSingle(line) + getStation(line) + "\n";
         }else if (regex4.test(line)) {
           formattedLines += getTimeSingle(line) + getStation(line) + "\n";
+        }else if (regex5.test(line)) {
+          if(line.slice(5, 6) !== '発' && line.slice(5, 6) !== '着'){
+            formattedLines += '(' + getTimeSingle(line) + getMidStation(line) + ')' + "\n";
+          }
         }else{
           // if(line == '徒歩'){
           if (line.includes('徒歩')) {
@@ -353,6 +372,23 @@
       // const station = line.slice(PosStart, PosEnd).trim();
 
       const keywords = ['地図', '出口', '時刻表', '(', '/'];
+
+      let PosEnds = keywords.map(keyword => {
+          const pos = line.indexOf(keyword);
+          return (pos < PosStart) ? line.length : pos;
+      });
+
+      const PosEnd = Math.min(...PosEnds);
+
+      const station = line.slice(PosStart, PosEnd).trim();
+
+      return station;
+    }
+
+    function getMidStation(line) {
+      const PosStart = 5;
+
+      const keywords = ['(', '/'];
 
       let PosEnds = keywords.map(keyword => {
           const pos = line.indexOf(keyword);
