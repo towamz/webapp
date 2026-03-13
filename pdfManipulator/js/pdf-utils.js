@@ -12,7 +12,7 @@ async function mergePDFs(files, addBlankIfOdd = true) {
 
     const mergedPdf = await PDFLib.PDFDocument.create();
 
-    for (const file of files) {
+    for (const [index, file] of files.entries()) {
 
         const buffer = await file.arrayBuffer();
         const pdfDoc = await PDFLib.PDFDocument.load(buffer,{ignoreEncryption:true});
@@ -26,7 +26,7 @@ async function mergePDFs(files, addBlankIfOdd = true) {
 
         pages.forEach(p => mergedPdf.addPage(p));
 
-        if (addBlankIfOdd && pageCount % 2 === 1) {
+        if (addBlankIfOdd && pageCount % 2 === 1 && index !== files.length - 1) {
 
             const size = pdfDoc.getPage(0).getSize();
             mergedPdf.addPage([size.width, size.height]);
