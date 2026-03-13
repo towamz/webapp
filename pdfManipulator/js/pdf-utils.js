@@ -47,7 +47,7 @@ async function reorderForDoubleSide(sourcePdf, blockSize = 8) {
     const newPdf = await PDFLib.PDFDocument.create();
 
     const blockMapping = {
-        4: [0,3,1,2],
+        4: [0,2,3,1],
         8: [0,2,4,6,3,1,7,5]
     };
 
