@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>PDFマージツール</title>
+</head>
+<body>
+
+<h2>PDFマージ</h2>
+
+<h3>奇数ページ処理</h3>
+
+<label>
+<input type="radio" name="oddPage" value="true" checked>
+空白ページを追加しない
+</label>
+
+<br>
+
+<label>
+<input type="radio" name="oddPage" value="false">
+空白ページを追加しない
+</label>
+
+<br><br>
+
+<input type="file" id="pdfInput" accept="application/pdf" multiple>
+
+<!-- pdf-lib: MIT License, Copyright (c) 2019 Andrew Dillon -->
+<!-- <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script> -->
+<script src="js/pdf-lib.min.js"></script>
+<script src="js/pdf-utils.js"></script>
+
+<script>
+
+const fileInput = document.getElementById("pdfInput");
+
+fileInput.addEventListener("change", async (e) => {
+
+    const files = Array.from(e.target.files);
+
+    if(files.length === 0) return;
+
+    const addBlank =
+        document.querySelector('input[name="oddPage"]:checked').value === "true";
+
+    // マージ
+    const mergedPdf = await mergePDFs(files, addBlank);
+
+    // ダウンロード
+    await downloadPdf(mergedPdf, "merged.pdf");
+
+});
+
+</script>
+
+</body>
+</html>

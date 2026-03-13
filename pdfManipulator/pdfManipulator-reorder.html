@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>PDF両面印刷ツール</title>
+</head>
+<body>
+
+<h2>PDF両面印刷用変換</h2>
+
+<label>
+<input type="radio" name="blockSize" value="4">
+4ページ
+</label>
+
+<label>
+<input type="radio" name="blockSize" value="8" checked>
+8ページ
+</label>
+
+<br><br>
+
+<input type="file" id="pdfInput" multiple>
+
+<!-- pdf-lib: MIT License, Copyright (c) 2019 Andrew Dillon -->
+<!-- <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script> -->
+<script src="js/pdf-lib.min.js"></script>
+<script src="js/pdf-utils.js"></script>
+
+<script>
+
+const pdfInput = document.getElementById("pdfInput");
+
+pdfInput.addEventListener("change", async e => {
+
+    const files = Array.from(e.target.files);
+
+    const blockSize =
+        parseInt(document.querySelector('input[name="blockSize"]:checked').value);
+
+    const mergedPdf = await mergePDFs(files, true);
+    const reorderedPdf = await reorderForDoubleSide(mergedPdf, blockSize);
+    await downloadPdf(reorderedPdf,"booklet.pdf");
+
+});
+
+</script>
+
+</body>
+</html>
