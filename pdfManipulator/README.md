@@ -1,2 +1,2 @@
 PDF操作用サンプルアプリ
-https://towamz.github.io/samplesPrivate/_application/pdfManipulator/index.html
+https://towamz.github.io/webapp/pdfManipulator/index.html
