@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>Info-Board</title>
+    <style>
+        body { font-family: "Segoe UI", Meiryo, sans-serif; background: #f0f2f5; padding: 20px; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 450px; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #007bff; padding-bottom: 8px; }
+        h2 { font-size: 1.1rem; color: #333; margin: 0; }
+        
+        .reset-btn { background: #6c757d; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 11px; }
+
+        .item-row { margin-bottom: 10px; }
+
+        /* 未使用スタイル */
+        .item-base { 
+            display: block; width: 100%; text-align: left; padding: 12px 15px;
+            border-radius: 8px; font-size: 14px; transition: 0.2s;
+            box-sizing: border-box; text-decoration: none; border: 1px solid #ced4da;
+            cursor: pointer;
+            background: #ffffff; color: #495057;
+        }
+
+        /* 種類による色分け */
+        /* button.item-base { background: #ffffff; color: #495057; }
+        a.item-base { background: #e7f3ff; color: #0056b3; font-weight: bold; } */
+
+        /* 使用済スタイル */
+        .item-base.done {
+            background: #e9ecef !important; 
+            color: #adb5bd !important; 
+            border-color: #dee2e6 !important;
+            /* text-decoration: line-through;   /* 取り消し線 */
+        }
+
+        .toast { position: fixed; bottom: 30px; background: rgba(0,0,0,0.7); color: white; padding: 8px 20px; border-radius: 25px; font-size: 12px; display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h2>情報一覧</h2>
+        <button class="reset-btn" onclick="location.reload()">Reset</button>
+    </div>
+    <div id="item-list"></div>
+</div>
+
+<div id="toast" class="toast">コピーしました</div>
+
+<script src="config.js"></script>
+<script>
+    const list = document.getElementById('item-list');
+
+    MASTER_DATA.forEach(item => {
+        const row = document.createElement('div');
+        row.className = 'item-row';
+
+        if (item.type === 'button') {
+            row.innerHTML = `<button class="item-base" onclick="handleButtonClick(this, '${item.value}')">${item.label}</button>`;
+        } else if (item.type === 'href') {
+            row.innerHTML = `<a href="${item.value}" target="_blank" class="item-base" onclick="this.classList.add('done')">🔗 ${item.label}</a>`;
+        }
+        list.appendChild(row);
+    });
+
+    async function handleButtonClick(element, text) {
+        try {
+            await navigator.clipboard.writeText(text);
+            element.classList.add('done'); 
+            showToast();
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    function showToast() {
+        const toast = document.getElementById('toast');
+        toast.style.display = 'block';
+        setTimeout(() => toast.style.display = 'none', 1000);
+    }
+</script>
+
+</body>
+</html>
