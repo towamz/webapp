@@ -53,7 +53,7 @@
 
 <div id="toast" class="toast">コピーしました</div>
 
-<script src="standardcrypt.js"></script>
+<script src="crypto-standard.js"></script>
 <script src="config.js"></script>
 <script>
     const list = document.getElementById('item-list');
@@ -65,26 +65,33 @@
         if (item.type === 'button') {
             row.innerHTML = `<button class="item-base" onclick="handleButtonClick(this, '${item.value}')">${item.label}</button>`;
         } else if (item.type === 'href') {
-            row.innerHTML = `<a href="${item.value}" target="_blank" class="item-base" onclick="this.classList.add('done')">🔗 ${item.label}</a>`;
+            row.innerHTML = `<a href="#" class="item-base" onclick="handleLinkClick(this, '${item.value}')">🔗 ${item.label}</a>`;
         }
         list.appendChild(row);
     });
 
-    async function handleButtonClick(element, encryptedText) {
+    // パスフレーズを取得し、復号まで行う共通処理
+    // 成功時: 復号済み文字列を返す
+    // 失敗時: showToastでエラー表示し、nullを返す
+    async function getOriginalDataOnClick(encryptedText) {
         const passphrase = document.getElementById('passphrase').value;
 
         if (!passphrase) {
             showToast('パスフレーズを入力してください', true);
-            return;
+            return null;
         }
 
-        let plainText;
         try {
-            plainText = await getOriginalData(encryptedText, passphrase);
+            return await getOriginalData(encryptedText, passphrase);
         } catch (err) {
             showToast(err.message, true);
-            return;
+            return null;
         }
+    }
+
+    async function handleButtonClick(element, encryptedText) {
+        const plainText = await getOriginalDataOnClick(encryptedText);
+        if (plainText === null) return;
 
         try {
             await navigator.clipboard.writeText(plainText);
@@ -94,6 +101,14 @@
             console.error(err);
             showToast('コピーに失敗しました', true);
         }
+    }
+
+    async function handleLinkClick(element, encryptedText) {
+        const plainUrl = await getOriginalDataOnClick(encryptedText);
+        if (plainUrl === null) return;
+
+        element.classList.add('done');
+        window.open(plainUrl, '_blank');
     }
 
     function showToast(message = 'コピーしました', isError = false) {

@@ -49,10 +49,7 @@ async function generate() {
 
     const results = [];
     for (const entry of entries) {
-        let value = entry.value;
-        if (entry.type === 'button') {
-            value = await getEncryptedData(entry.value, passphrase);
-        }
+        let value = await getEncryptedData(entry.value, passphrase);
         results.push(`    { type: '${entry.type}', label: '${escapeForJs(entry.label)}', value: '${escapeForJs(value)}' }`);
     }
 

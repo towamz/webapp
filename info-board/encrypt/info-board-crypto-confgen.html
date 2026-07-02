@@ -26,9 +26,9 @@
 <body>
 
 <div class="container">
-    <h2>config.js 生成ツール（社内配布しない・自分の端末でのみ使用）</h2>
+    <h2>config.js 生成ツール</h2>
 
-    <label for="passphrase">パスフレーズ（config.jsで使う共通パスフレーズ）</label>
+    <label for="passphrase">パスフレーズ</label>
     <input type="password" id="passphrase" placeholder="パスフレーズを入力">
 
     <label for="csvInput">CSV貼り付け（1行につき type,label,value）</label>
@@ -44,8 +44,8 @@
     <button id="downloadBtn" onclick="download()">config.js をダウンロード</button>
 </div>
 
-<script src="standardcrypt.js"></script>
-<script src="encgenerator.js"></script>
+<script src="crypto-standard.js"></script>
+<script src="crypto-confgen.js"></script>
 
 </body>
 </html>
