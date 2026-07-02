@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>config.js 生成ツール</title>
+<style>
+    body { font-family: "Segoe UI", Meiryo, sans-serif; background: #f0f2f5; padding: 20px; }
+    .container { max-width: 700px; margin: 0 auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    h2 { font-size: 1.1rem; color: #333; }
+    label { display: block; margin-top: 15px; font-size: 13px; color: #555; font-weight: bold; }
+    input[type="password"], textarea {
+        width: 100%; box-sizing: border-box; padding: 8px 10px; margin-top: 5px;
+        border: 1px solid #ced4da; border-radius: 6px; font-size: 13px; font-family: monospace;
+    }
+    textarea { resize: vertical; }
+    #csvInput { height: 120px; }
+    #result { height: 200px; background: #f8f9fa; }
+    button { margin-top: 15px; padding: 8px 18px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; }
+    button:hover { background: #0069d9; }
+    #downloadBtn { background: #28a745; margin-left: 8px; }
+    #downloadBtn:hover { background: #218838; }
+    .hint { font-size: 12px; color: #888; margin-top: 3px; }
+    .error { color: #dc3545; font-size: 13px; margin-top: 8px; }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h2>config.js 生成ツール（社内配布しない・自分の端末でのみ使用）</h2>
+
+    <label for="passphrase">パスフレーズ（config.jsで使う共通パスフレーズ）</label>
+    <input type="password" id="passphrase" placeholder="パスフレーズを入力">
+
+    <label for="csvInput">CSV貼り付け（1行につき type,label,value）</label>
+    <textarea id="csvInput" placeholder="button,ログインID,sampleLoginUsername&#10;button,パスワード,samplePass123&#10;href,社内ポータル,https://portal.example.co.jp"></textarea>
+    <div class="hint">type: button（暗号化される）または href（平文のまま）</div>
+
+    <button onclick="generate()">config.js を生成</button>
+
+    <div id="errorMsg" class="error"></div>
+
+    <label for="result">生成結果</label>
+    <textarea id="result" readonly></textarea>
+    <button id="downloadBtn" onclick="download()">config.js をダウンロード</button>
+</div>
+
+<script src="standardcrypt.js"></script>
+<script src="encgenerator.js"></script>
+
+</body>
+</html>
